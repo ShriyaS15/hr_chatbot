@@ -1,0 +1,285 @@
+{
+    "intents": [
+        {
+            "tag": "greeting",
+            "patterns": [
+                "Hi",
+                "Hello",
+                "Good morning",
+                "Good afternoon",
+                "Hey there",
+                "Greetings",
+                "Hi HR",
+                "Hello HR team"
+            ],
+            "responses": [
+                "Hello! Welcome to HR Support. How can I assist you today?",
+                "Hi there! I'm your HR assistant. What can I help you with?",
+                "Good day! I'm here to help with your HR queries. What do you need?"
+            ]
+        },
+        {
+            "tag": "goodbye",
+            "patterns": [
+                "Goodbye",
+                "See you later",
+                "Bye",
+                "Thank you, bye",
+                "That's all for now",
+                "See ya",
+                "Take care"
+            ],
+            "responses": [
+                "Goodbye! Feel free to reach out anytime for HR support.",
+                "Take care! Don't hesitate to contact HR if you need anything else.",
+                "Have a great day! I'm always here when you need HR assistance."
+            ]
+        },
+        {
+            "tag": "leave_policy",
+            "patterns": [
+                "What is the leave policy?",
+                "How many leaves do I have?",
+                "Tell me about vacation days",
+                "Leave balance",
+                "How to apply for leave",
+                "Sick leave policy",
+                "Annual leave",
+                "PTO policy"
+            ],
+            "responses": [
+                "Our leave policy includes 20 annual vacation days, 10 sick days, and 3 personal days per year. You can check your current balance in the employee portal or contact HR directly.",
+                "You're entitled to various types of leave including vacation, sick, and personal days. Please refer to the employee handbook or contact HR for your specific balance and application process."
+            ]
+        },
+        {
+            "tag": "payroll",
+            "patterns": [
+                "When is payday?",
+                "Payroll questions",
+                "Salary inquiry",
+                "Pay stub",
+                "Direct deposit",
+                "Tax deductions",
+                "Overtime pay",
+                "Bonus information"
+            ],
+            "responses": [
+                "Payroll is processed bi-weekly on Fridays. You can access your pay stubs through the employee portal. For specific payroll questions, please contact the payroll department.",
+                "Pay is distributed every other Friday via direct deposit. For detailed payroll inquiries, tax questions, or pay stub access, please reach out to our payroll team."
+            ]
+        },
+        {
+            "tag": "benefits",
+            "patterns": [
+                "What benefits do we have?",
+                "Health insurance",
+                "Dental coverage",
+                "Vision insurance",
+                "401k",
+                "Retirement plan",
+                "Life insurance",
+                "Benefits enrollment"
+            ],
+            "responses": [
+                "We offer comprehensive benefits including health, dental, and vision insurance, 401(k) with company matching, life insurance, and flexible spending accounts. Benefits enrollment occurs annually during open enrollment period.",
+                "Our benefits package includes medical, dental, vision, retirement savings plan with matching, life insurance, and various wellness programs. Contact HR for detailed benefit information and enrollment assistance."
+            ]
+        },
+        {
+            "tag": "hr_contact",
+            "patterns": [
+                "How do I contact HR?",
+                "HR phone number",
+                "HR email",
+                "HR office hours",
+                "Where is HR located?",
+                "HR department contact"
+            ],
+            "responses": [
+                "You can reach HR at hr@company.com or call us at (555) 123-4567. Our office hours are Monday-Friday, 9 AM to 5 PM. We're located on the 2nd floor, Room 201.",
+                "HR is available Monday through Friday from 9 AM to 5 PM. Contact us at hr@company.com, call (555) 123-4567, or visit us at our office on the 2nd floor."
+            ]
+        },
+        {
+            "tag": "performance_review",
+            "patterns": [
+                "When is my performance review?",
+                "Performance evaluation",
+                "Annual review",
+                "Performance feedback",
+                "Review schedule",
+                "Appraisal process"
+            ],
+            "responses": [
+                "Performance reviews are conducted annually, typically in Q4. You'll receive advance notice from your manager and HR. The process includes self-evaluation, manager review, and goal setting for the following year.",
+                "Annual performance evaluations occur in the fourth quarter. Your manager will schedule your review meeting, and you'll complete a self-assessment beforehand. Contact HR if you have questions about the review process."
+            ]
+        },
+        {
+            "tag": "training",
+            "patterns": [
+                "Training opportunities",
+                "Professional development",
+                "Skills training",
+                "Courses available",
+                "Learning programs",
+                "Career development",
+                "Training schedule"
+            ],
+            "responses": [
+                "We offer various training programs including technical skills, leadership development, and professional certifications. Check the learning management system for available courses or speak with HR about development opportunities.",
+                "Professional development opportunities include online courses, workshops, conferences, and tuition reimbursement programs. Visit our learning portal or contact HR to discuss your development goals."
+            ]
+        },
+        {
+            "tag": "company_policy",
+            "patterns": [
+                "Company policies",
+                "Employee handbook",
+                "Code of conduct",
+                "Dress code",
+                "Work from home policy",
+                "Remote work",
+                "Company rules"
+            ],
+            "responses": [
+                "All company policies are outlined in the employee handbook available on our intranet. This includes code of conduct, dress code, remote work policies, and other important guidelines.",
+                "You can find all company policies in the employee handbook on the company portal. For specific policy questions or clarifications, please don't hesitate to contact HR."
+            ]
+        },
+        {
+            "tag": "onboarding",
+            "patterns": [
+                "New employee orientation",
+                "First day information",
+                "Onboarding process",
+                "What do I need for my first day?",
+                "New hire paperwork",
+                "Getting started"
+            ],
+            "responses": [
+                "Welcome to the team! Your onboarding will include orientation, paperwork completion, system access setup, and meetings with your team. Please bring valid ID and any required documents on your first day.",
+                "New employee onboarding includes orientation sessions, completing necessary paperwork, IT setup, and introductions to your team. HR will guide you through each step of the process."
+            ]
+        },
+        {
+            "tag": "workplace_issues",
+            "patterns": [
+                "Workplace complaint",
+                "Report an issue",
+                "Harassment",
+                "Discrimination",
+                "Conflict resolution",
+                "Employee relations",
+                "Workplace concerns"
+            ],
+            "responses": [
+                "HR takes all workplace concerns seriously. Please contact HR immediately to discuss any issues confidentially. We have processes in place to address complaints and ensure a safe, respectful work environment.",
+                "If you're experiencing workplace issues, please reach out to HR right away. All reports are handled confidentially, and we're committed to maintaining a positive and safe work environment for everyone."
+            ]
+        },
+        {
+            "tag": "resignation",
+            "patterns": [
+                "How to resign",
+                "Resignation process",
+                "Two weeks notice",
+                "Quitting",
+                "Leaving the company",
+                "Exit interview",
+                "Last day procedures"
+            ],
+            "responses": [
+                "To resign, please submit a formal resignation letter to your manager and HR with at least two weeks' notice. We'll schedule an exit interview and provide information about final pay, benefits, and return of company property.",
+                "The resignation process involves submitting written notice to your manager and HR, completing an exit interview, and returning company equipment. HR will guide you through final pay and benefit information."
+            ]
+        },
+        {
+            "tag": "employee_records",
+            "patterns": [
+                "Update personal information",
+                "Change address",
+                "Emergency contact",
+                "Personal details",
+                "Employee information",
+                "Contact details"
+            ],
+            "responses": [
+                "You can update your personal information through the employee self-service portal or by submitting a change form to HR. This includes address, phone number, emergency contacts, and other personal details.",
+                "To update your employee records, please use the self-service portal or contact HR with the updated information. Keep your emergency contacts and personal information current for important communications."
+            ]
+        },
+        {
+            "tag": "time_attendance",
+            "patterns": [
+                "Time tracking",
+                "Attendance policy",
+                "Clocking in",
+                "Timesheet",
+                "Work schedule",
+                "Flexible hours",
+                "Attendance requirements"
+            ],
+            "responses": [
+                "Please refer to the attendance policy in your employee handbook. Time should be tracked according to company procedures, and any attendance issues should be discussed with your manager or HR.",
+                "Our attendance policy outlines expectations for punctuality, time tracking, and schedule flexibility. For specific questions about your schedule or attendance requirements, please contact HR."
+            ]
+        },
+        {
+            "tag": "it_support",
+            "patterns": [
+                "IT help",
+                "Computer issues",
+                "Password reset",
+                "Software access",
+                "Technical support",
+                "System problems",
+                "Equipment request"
+            ],
+            "responses": [
+                "For IT support, please contact our IT helpdesk at ithelp@company.com or call ext. 1234. They can assist with technical issues, password resets, and equipment requests.",
+                "IT support is available for all technical needs. Contact the IT helpdesk at ithelp@company.com or extension 1234 for computer issues, software access, and technical assistance."
+            ]
+        },
+        {
+            "tag": "employee_id_lookup",
+            "patterns": [
+                "What is my employee No?",
+                "Can you tell me my No?",
+                "What's the No for Alagbe,Trina?",
+                "Find my employee number",
+                "Employee number for Sarah Akinkuolie"
+            ],
+            "responses": [
+                "Sure, let me fetch your employee No..."
+            ]
+        },
+        {
+            "tag": "employee_salary_lookup",
+            "patterns": [
+                "What is my salary?",
+                "How much do I earn?",
+                "Tell me the salary of Alagbe,Trina",
+                "What's Sarah's salary?",
+                "How much does Wilson make?"
+            ],
+            "responses": [
+                "Hold on, I'm fetching the salary details..."
+            ]
+        },
+        {
+            "tag": "employee_name_lookup",
+            "patterns": [
+                "Who is employee 10088?",
+                "Name of employee ID 10088",
+                "Tell me who 10196 is",
+                "What is the name of employee 10069?",
+                "Find the name by employee number 10084"
+            ],
+            "responses": [
+                "Let me look up the name for that employee ID..."
+            ]
+        }
+    ]
+}
