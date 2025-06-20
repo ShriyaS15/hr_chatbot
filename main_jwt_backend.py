@@ -5,18 +5,15 @@ import os
 import json
 import pandas as pd
 import numpy as np
-import fitz
 import nltk
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from functools import wraps
 from torch.utils.data import DataLoader, TensorDataset
-from sklearn.preprocessing import LabelEncoder
 import random
 import jwt as pyjwt
 import jwt
-from docx import Document
 
 # --- Init Flask ---
 app = Flask(__name__)
@@ -120,6 +117,18 @@ class LeaveManager:
     def get_user_data(self, name):
         return self.df[self.df['Name'].str.lower() == name.lower()]
 
+    def get_employee_number(self, name):
+        df = self.get_user_data(name)
+        if not df.empty and 'Employee No' in df.columns:
+            return str(df['Employee No'].iloc[0])
+        return None
+
+    def get_employee_number(self, name):
+        df = self.get_user_data(name)
+        if not df.empty and 'Employee No' in df.columns:
+            return str(df['Employee No'].iloc[0])
+        return None
+
     def total_days_by_type(self, name, leave_type, txn_type="Taken"):
         df = self.get_user_data(name)
         df = df[(df['Leave Type'].str.lower() == leave_type.lower())
@@ -132,12 +141,23 @@ class LeaveManager:
             'Days'].sum()
         return summary.to_dict()
 
+    def get_employee_id(self, name):
+        df = self.get_user_data(name)
+        if not df.empty and 'Employee ID' in df.columns:
+            return str(df.iloc[0]['Employee ID'])
+        return None
+
+    def get_department(self, name):
+        df = self.get_user_data(name)
+        if not df.empty and 'Department' in df.columns:
+            return str(df.iloc[0]['Department'])
+        return None
+
 
 class ChatbotAssistant:
-    def __init__(self, intents_path, model_path, policy_path, excel_path):
+    def __init__(self, intents_path, model_path, excel_path):
         self.intents_path = intents_path
         self.model_path = model_path
-        self.policy_path = policy_path
         try:
             self.leave_mgr = LeaveManager(excel_path)
         except:
@@ -150,22 +170,48 @@ class ChatbotAssistant:
         self.model = None
         self.current_user = None
         self.policy_text = ""
-        self.load_policy_text()
         self.build_model()
 
     def update_policy_document(self, file_path):
-        try:
-            doc = fitz.open(file_path)
-            text = []
-            for page in doc:
-                blocks = page.get_text("blocks")
-                for block in blocks:
-                    if isinstance(block, (list, tuple)) and len(block) > 4:
-                        text.append(block[4].strip())
-            self.policy_text = " ".join(text).lower()
-            print(f"✅ Policy document updated from: {file_path}")
-        except Exception as e:
-            print(f"⚠️ Failed to update policy document: {e}")
+        # PDF reading has been disabled. Keep method for compatibility but
+        # do not process the uploaded document.
+        self.policy_text = ""
+        print("ℹ️ Policy document upload ignored; using intents.json only")
+
+    def search_policy(self, query):
+        """Search for policy information based on keywords in the query"""
+        query = query.lower()
+        
+        # Map keywords to intent tags for policy responses
+        policy_mappings = {
+            'general leave': 'general_leave_policy',
+            'leave policy': 'general_leave_policy',
+            'annual leave': 'annual_leave',
+            'al': 'annual_leave',
+            'casual leave': 'casual_leave',
+            'cl': 'casual_leave',
+            'sick leave': 'sick_leave',
+            'sl': 'sick_leave',
+            'lop': 'lop_policy',
+            'loss of pay': 'lop_policy',
+            'comp off': 'comp_off_policy',
+            'comp-off': 'comp_off_policy',
+            'cof': 'comp_off_policy',
+            'carry forward': 'carry_forward_policy',
+            'encashment': 'carry_forward_policy'
+        }
+        
+        # Find the best matching policy
+        for keyword, intent_tag in policy_mappings.items():
+            if keyword in query:
+                if intent_tag in self.responses:
+                    return random.choice(self.responses[intent_tag])
+        
+        # If no specific policy found, return general leave policy
+        if 'general_leave_policy' in self.responses:
+            return random.choice(self.responses['general_leave_policy'])
+        
+        return "I couldn't find specific policy information. Please contact HR for detailed leave policy information."
 
     def tokenize_and_lemmatize(self, text):
         try:
@@ -179,26 +225,60 @@ class ChatbotAssistant:
 
     def parse_intents(self):
         try:
-            with open(self.intents_path, 'r') as f:
+            with open(self.intents_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+            
+            # Clear existing data
+            self.documents = []
+            self.vocabulary = []
+            self.intents = []
+            self.responses = {}
+            
+            print(f"📖 Reading intents from: {self.intents_path}")
+            
             for intent in data['intents']:
                 tag = intent['tag']
                 self.intents.append(tag)
                 self.responses[tag] = intent['responses']
+                
                 for pattern in intent['patterns']:
                     words = self.tokenize_and_lemmatize(pattern)
                     self.vocabulary.extend(words)
                     self.documents.append((words, tag))
+            
             self.vocabulary = sorted(list(set(self.vocabulary)))
             self.intents = sorted(list(set(self.intents)))
+            
+            print(f"✅ Successfully loaded:")
+            print(f"   - {len(self.intents)} intents: {self.intents[:5]}{'...' if len(self.intents) > 5 else ''}")
+            print(f"   - {len(self.vocabulary)} vocabulary words")
+            print(f"   - {len(self.documents)} training patterns")
+            
+        except FileNotFoundError:
+            print(f"❌ Error: intents.json file not found at {self.intents_path}")
+            self._create_fallback_intents()
+        except json.JSONDecodeError as e:
+            print(f"❌ Error: Invalid JSON in intents.json - {e}")
+            self._create_fallback_intents()
         except Exception as e:
-            print(f"Error parsing intents: {e}")
-            self.intents = ['greeting', 'goodbye']
-            self.vocabulary = ['hello', 'hi', 'bye', 'goodbye']
-            self.responses = {
-                'greeting': ['Hello! How can I help you?'],
-                'goodbye': ['Goodbye! Have a great day!']
-            }
+            print(f"❌ Error parsing intents: {e}")
+            self._create_fallback_intents()
+    
+    def _create_fallback_intents(self):
+        """Create basic fallback intents if main file fails to load"""
+        print("🔄 Creating fallback intents...")
+        self.intents = ['greeting', 'goodbye']
+        self.vocabulary = ['hello', 'hi', 'bye', 'goodbye', 'good', 'morning', 'afternoon']
+        self.responses = {
+            'greeting': ['Hello! How can I help you?', 'Hi there! What can I do for you?'],
+            'goodbye': ['Goodbye! Have a great day!', 'See you later!']
+        }
+        self.documents = [
+            (['hello'], 'greeting'),
+            (['hi'], 'greeting'),
+            (['bye'], 'goodbye'),
+            (['goodbye'], 'goodbye')
+        ]
 
     def prepare_data(self):
         X, y = [], []
@@ -212,20 +292,9 @@ class ChatbotAssistant:
         return np.array(X), np.array(y)
 
     def load_policy_text(self):
-        try:
-            doc = fitz.open(self.policy_path)
-            text = []
-            for page in doc:
-                blocks = page.get_text("blocks")  # preserve structure
-                for block in blocks:
-                    if isinstance(block, (list, tuple)) and len(block) > 4:
-                        text.append(block[4].strip())
-            self.policy_text = " ".join(text).lower()
-            print(
-                f"✅ Policy PDF loaded. Length: {len(self.policy_text)} chars")
-        except Exception as e:
-            print(f"⚠️ Policy PDF not found or unreadable: {e}")
-            self.policy_text = "company leave policy: employees get 20 vacation days, 10 sick days per year."
+        """Placeholder for backward compatibility. PDF loading is disabled."""
+        self.policy_text = ""
+        print("ℹ️ Skipping policy PDF loading; relying on intents.json")
 
     def train_model(self):
         X, y = self.prepare_data()
@@ -248,23 +317,42 @@ class ChatbotAssistant:
 
     def build_model(self):
         self.parse_intents()
-        if os.path.exists(self.model_path):
-            try:
-                X, y = self.prepare_data()
-                self.model = ChatbotModel(X.shape[1], len(self.intents))
-                self.model.load_state_dict(torch.load(
-                    self.model_path, weights_only=True))
-                print("✅ Loaded pretrained model.")
-            except Exception as e:
-                print("⚠️ Error loading model, retraining:", e)
-                self.train_model()
-                torch.save(self.model.state_dict(), self.model_path)
-        else:
-            self.train_model()
+        
+        # Always retrain the model to ensure it matches current intents.json
+        print("🔄 Training model to match current intents.json...")
+        self.train_model()
+        
+        # Save the newly trained model
+        try:
             torch.save(self.model.state_dict(), self.model_path)
+            print("✅ Model saved successfully")
+        except Exception as e:
+            print(f"⚠️ Could not save model: {e}")
+            
+        # Optionally, you can uncomment the code below if you want to load saved models
+        # But for now, we'll always retrain to ensure consistency with intents.json
+        
+        # if os.path.exists(self.model_path):
+        #     try:
+        #         X, y = self.prepare_data()
+        #         self.model = ChatbotModel(X.shape[1], len(self.intents))
+        #         self.model.load_state_dict(torch.load(
+        #             self.model_path, weights_only=True))
+        #         print("✅ Loaded pretrained model.")
+        #     except Exception as e:
+        #         print("⚠️ Error loading model, retraining:", e)
+        #         self.train_model()
+        #         torch.save(self.model.state_dict(), self.model_path)
+        # else:
+        #     self.train_model()
+        #     torch.save(self.model.state_dict(), self.model_path)
 
     def process_message(self, msg):
+        original_msg = msg
         msg = msg.lower()
+        
+        print(f"🔍 Processing message: '{original_msg}'")
+        
         if "my name is" in msg:
             name = msg.split("my name is")[-1].strip().title()
             if not self.leave_mgr.get_user_data(name).empty:
@@ -272,10 +360,19 @@ class ChatbotAssistant:
                 return f"Hi {name}, your record has been loaded. How can I help you?"
             return "I couldn't find your name in the system. Please check the spelling or contact HR."
 
-        if any(keyword in msg for keyword in ["leave policy", "lop", "casual leave", "annual leave", "sick leave"]):
-            return self.search_policy(msg)
+        if any(kw in msg for kw in ["employee number for", "employee id for", "employee no for", "number for"]):
+            name_part = msg.split("for")[-1].strip().title()
+            emp_no = self.leave_mgr.get_employee_number(name_part)
+            if emp_no:
+                return f"The employee number for {name_part} is {emp_no}."
+            return f"I couldn't find the employee number for {name_part}."
 
         if self.current_user:
+            if any(keyword in msg for keyword in ["employee number", "employee no", "employee id", "my id"]):
+                emp_no = self.leave_mgr.get_employee_number(self.current_user)
+                if emp_no:
+                    return f"Your employee number is {emp_no}."
+                return "I couldn't find your employee number in the records."
             if "how many" in msg or "taken" in msg:
                 for lt in ["casual", "sick", "earned", "paid", "lop"]:
                     if lt in msg:
@@ -288,33 +385,50 @@ class ChatbotAssistant:
                     summary_text = "Your leave summary:\n"
                     for leave_type, days in summary.items():
                         summary_text += f"- {leave_type}: {days} days\n"
-
                     return summary_text
+            if ("employee" in msg and ("id" in msg or "number" in msg or "no" in msg)):
+                emp_id = self.leave_mgr.get_employee_id(self.current_user)
+                if emp_id:
+                    return f"Your employee ID is {emp_id}."
+                return "I couldn't find your employee ID in the records."
+            if "department" in msg:
+                dept = self.leave_mgr.get_department(self.current_user)
+                if dept:
+                    return f"You work in the {dept} department."
+                return "I couldn't find your department information."
+        
+        # Use ML model for all other queries (this should now work with intents.json)
         try:
-            tokens = self.tokenize_and_lemmatize(msg)
+            tokens = self.tokenize_and_lemmatize(original_msg)
             bow = self.bag_of_words(tokens)
             X = torch.tensor([bow], dtype=torch.float32)
+            
+            if self.model is None:
+                return "Model not initialized. Please contact support."
+                
             self.model.eval()
             with torch.no_grad():
                 out = self.model(X)
                 tag_idx = torch.argmax(out, dim=1).item()
-                tag = self.intents[tag_idx]
-            return random.choice(self.responses.get(tag, ["Sorry, I didn't understand that. Can you please rephrase?"]))
+                
+                if tag_idx < len(self.intents):
+                    tag = self.intents[tag_idx]
+                    print(f"🎯 Predicted intent: {tag}")
+                    response = random.choice(self.responses.get(tag, ["Sorry, I didn't understand that. Can you please rephrase?"]))
+                    return response
+                else:
+                    return "Sorry, I didn't understand that. Can you please rephrase?"
+                    
         except Exception as e:
-            print(f"Error in message processing: {e}")
+            print(f"❌ Error in message processing: {e}")
             return "I'm having trouble processing your request. Please try again or contact HR for assistance."
-
-
 # Initialize assistant
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 assistant = ChatbotAssistant(
     intents_path=os.path.join(BASE_DIR, 'intents.json'),
     model_path=os.path.join(BASE_DIR, 'chatbot_model.pth'),
-    excel_path=os.path.join(BASE_DIR, 'leave_data.xlsx'),
-    policy_path=os.path.join(BASE_DIR, 'leave_policy.pdf')
+    excel_path=os.path.join(BASE_DIR, 'leave_data.xlsx')
 )
-
-
 @app.route('/')
 def index():
     return send_from_directory('.', 'main_jwt_backend.html')
